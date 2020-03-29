@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yosep.order.mapper.orderMapper">
+	<select id="getOrderListBeforeBuy"
+		resultType="com.yosep.order.entity.Order">
+		SELECT *
+		FROM yoggaebi_order
+		WHERE senderId = #{userId} AND isBuy = 0
+	</select>
+	
+	<select id="getOrderListAfterBuy"
+		resultType="com.yosep.order.entity.Order">
+		SELECT *
+		FROM yoggaebi_order
+		WHERE senderId = #{userId} AND isBuy = 1
+	</select>
+
+	<insert id="createOrder">
+		INSERT INTO
+		yoggaebi_order(orderId,senderId,senderName,productId,isBuy)
+		VALUES(#{orderId},#{senderId},#{senderName},#{productId},#{isBuy})
+	</insert>
+
+	<update id="buyUpdateOrder">
+		UPDATE yoggaebi_order
+		SET isBuy = true
+		WHERE senderId =
+		#{userId}
+	</update>
+
+	<update id="updateOrdersForPay">
+		UPDATE yoggaebi_order
+		SET receiverName =
+		#{receiverName}, phone=#{phone},
+		postCode = #{postCode}, roadAddr =
+		#{roadAddr}, jibunAddr=#{jibunAddr}, extraAddr=#{extraAddr},
+		detailAddr = #{detailAddr}
+	</update>
+
+	<update id="deleteUpdateOrder">
+
+	</update>
+</mapper>

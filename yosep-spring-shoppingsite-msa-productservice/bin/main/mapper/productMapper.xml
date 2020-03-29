@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yosep.product.mapper.productMapper">
+	<select id="productAll" resultType="com.yosep.product.entity.Product">
+		SELECT productId, productName,
+		productSale, productPrice,productQuantity,productType FROM (
+		SELECT rownum AS rn, A.* from(
+        SELECT (@rownum:=@rownum+1) as rownum, productId, productName,
+		productSale, productPrice,productQuantity,productType,product_rdate
+		FROM
+		yoggaebi_product, (SELECT @rownum:= 0) r
+		WHERE productType like #{productType}
+		ORDER BY product_rdate DESC
+        ) A
+		)B WHERE rn BETWEEN #{start} AND #{end};
+		<!-- SELECT productId, productName,
+		productSale,productDetail, productPrice,productQuantity,productType FROM(
+		SELECT rownum AS rn, A.* from(
+		SELECT (@rownum:=@rownum+1) as rownum, productId, productName,
+		productSale,productDetail, productPrice,productQuantity,productType,product_rdate
+		FROM
+		yoggaebi_product, (SELECT @rownum:= 0) r
+		WHERE productType like #{productType}
+		<include refid="search"></include>
+		ORDER BY product_rdate DESC
+		<include refid="pagingFooter"></include> -->
+	</select>
+	
+	<select id="getProductProfileImage" resultType="String">
+		SELECT url
+		FROM yoggaebi_product_profile_files
+		WHERE productId = #{productId}
+		LIMIT 1
+	</select>
+
+	<insert id="createProduct">
+		INSERT INTO
+		yoggaebi_product(productId,productName,productSale,productQuantity,productType,productPrice,productDetail)
+		VALUES(#{productId},#{productName},#{productSale},#{productQuantity},#{productType},#{productPrice},#{productDetail})
+	</insert>
+
+	<insert id="createProductProfileImg">
+		INSERT INTO
+		yoggaebi_product_profile_files(productId,fileName,url)
+		VALUES(#{productId},#{fileName},#{url})
+	</insert>
+
+	<insert id="createProductDescription">
+		INSERT INTO
+		yoggaebi_product_description(productId,url,productDescription)
+		VALUES(#{productId},#{url},#{productDescription})
+	</insert>
+	
+	<update id="updateProductQuantity">
+		UPDATE yoggaebi_product
+		SET productQuantity = productQuantity - 1
+		WHERE productId = #{productId}
+	</update>
+
+	<select id="getProductsCount" resultType="int">
+		SELECT count(*)
+		FROM
+		yoggaebi_product
+		WHERE productType = #{productType}
+	</select>
+
+	<!-- sql code 조각 -->
+	<!-- 반복되는 sql의 일부를 sql태그를 이용하여 따로 빼둘수 있다. -->
+	<sql id="search">
+		WHERE
+		productType like #{productType}
+		<!-- productName like '%' #{keyword} '%' -->
+		<!-- <choose> 검색옵션이 전체 검색일 경우 <when test="searchOption == 'all'"> WHERE 
+			b.writer = u.user_id AND (user_name like '%' #{keyword} '%' OR content like 
+			'%' #{keyword} '%' OR title like '%' #{keyword} '%') </when> 전체 검색이 아닐 경우 
+			<otherwise> WHERE b.writer = u.user_id AND ${searchOption} like '%' #{keyword} 
+			'%' </otherwise> </choose> -->
+	</sql>
+
+	<!-- 페이징 sql -->
+	<sql id="pagingHeader">
+		SELECT * FROM (
+		SELECT rownum AS rn, A.* from(
+	</sql>
+	<sql id="pagingFooter">
+		) A
+		)B WHERE rn BETWEEN #{start} AND #{end}
+	</sql>
+	
+	<select id="getProductDetail" resultType="com.yosep.product.entity.Product">
+		SELECT * FROM yoggaebi_product
+		WHERE productId = #{productId}
+	</select>
+</mapper>
